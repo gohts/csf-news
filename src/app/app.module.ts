@@ -11,6 +11,8 @@ import { NewsComponent } from './components/news.component';
 import { MainComponent } from './components/main.component';
 import { NewsDatabase } from './news.database';
 import { NewsHttpService } from './newshttp.service';
+import { ServiceWorkerModule } from '@angular/service-worker';
+import { environment } from '../environments/environment';
 
 // Configure Routes
 const ROUTES: Routes = [
@@ -35,7 +37,8 @@ const ROUTES: Routes = [
     FormsModule, 
     ReactiveFormsModule,
     RouterModule.forRoot(ROUTES),
-    HttpClientModule
+    HttpClientModule,
+    ServiceWorkerModule.register('ngsw-worker.js', { enabled: environment.production })
   ],
   providers: [NewsDatabase, NewsHttpService],
   bootstrap: [AppComponent]
