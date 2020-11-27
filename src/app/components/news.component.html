@@ -1,0 +1,46 @@
+<div class="row">
+    <div class="col">
+        <div class="btn-toolbar justify-content-between mb-3">
+            <span class="h3">News from <span class="text-info font-italic">{{country}}</span></span>
+            <button type="button" class="btn btn-primary" [routerLink]="['/']">Back</button>
+        </div>
+        <div class="card mb-3" *ngFor="let article of articles; let i = index">
+            <div class="row no-gutters p-3">
+                <div class="col-md-6">
+                    <img src={{article.urlToImage}} style="max-width: 500px;">
+                </div>
+                <div class=col-md-6>
+                    <h5 class="card-title">{{article.title}} - {{article.sourceName}}</h5>
+                    <p class="card-text">{{article.description}}</p>
+                    <hr>
+                    <p class="card-text">{{article.content}}</p>
+                    <p class="card-text">
+                        <small class="text-muted">
+                            Published at: {{article.publishedAt}} UTC
+                        </small> <br>
+                        <small class="text-muted" *ngIf="article.author">
+                            by {{article.author}}
+                        </small>
+                    </p>
+                    <div class="btn-toolbar justify-content-between">
+                        <a href={{article.url}} target="blank" class="text-link">Read more</a>
+                        <span>
+                            <input class="form-check-input" type="checkbox" [checked]="article.save">
+                            <small class="text-info">Save</small>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- sourceName: r.source.name,
+author: r.author,
+title: r.title,
+description: r.description,
+url: r.url,
+urlToImage: r.urlToImage,
+publishedAt: r.publishedAt,
+content: r.content -->

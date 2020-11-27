@@ -1,0 +1,14 @@
+<div class="row">
+    <div class="col">
+        <div class="btn-toolbar justify-content-between mb-3">
+            <span class="h3">Countries</span>
+            <button type="button" class="btn btn-primary" [routerLink]="['/settings']">Settings</button>
+        </div>
+        <div class="list-group" *ngFor="let c of countryList">
+            <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" [routerLink]="['/news',c.isoCode]">
+                {{c.countryName}}
+                <img src={{c.flagUrl}} style="max-height:25px">
+            </a>
+        </div>
+    </div>
+</div>
