@@ -11,7 +11,7 @@ export interface Country {
 
 export interface NewsArticle {
     country: string;
-    retrieveTime: string;
+    retrieveTime: number;
     save: boolean;
     sourceName: string;
     author: string;

@@ -16,7 +16,7 @@ export class NewsDatabase extends Dexie {
         this.version(1).stores({
             apiKeySettings: '++id, apiKey',
             countryList: 'isoCode',
-            newsArticles: 'url, country'
+            newsArticles: 'url, country, retrieveTime'
         })
         this.apiKeySettings = this.table('apiKeySettings');
         this.countryList = this.table('countryList');
@@ -67,9 +67,27 @@ export class NewsDatabase extends Dexie {
             .toArray()
     }
 
-    // save news articles
+    // add news articles
     addNewsArticle(n: NewsArticle[]): Promise<any> {
         return this.newsArticles.bulkAdd(n)
+    }
+
+    // delete articles greater than 5 minutes and not makred as save
+    clearOldNewsArticle(country: string):Promise<any> {
+        return this.newsArticles
+            .where('retrieveTime').below(Date.now()-300000)
+                .and(function(item) { return (item.save != true && item.country == country)})
+                    .delete()
+    }
+
+    // save articles
+    saveNewsArticle(url: string, country: string, value:boolean):Promise<any> {
+        return this.newsArticles
+            .where({
+                'url':url,
+                'country':country
+            })
+            .modify({'save': value})
     }
 
 }

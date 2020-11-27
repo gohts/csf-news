@@ -25,7 +25,7 @@
                     <div class="btn-toolbar justify-content-between">
                         <a href={{article.url}} target="blank" class="text-link">Read more</a>
                         <span>
-                            <input class="form-check-input" type="checkbox" [checked]="article.save">
+                            <input class="form-check-input" type="checkbox" [checked]="article.save" (change)="saveArticle(article.url, $event)">
                             <small class="text-info">Save</small>
                         </span>
                     </div>

@@ -12,18 +12,18 @@ import { NewsHttpService } from '../newshttp.service';
 export class NewsComponent implements OnInit {
 
   country
+  isoCode
   apiKey
   retrievedArticle
   articles: NewsArticle[]
   
-
   constructor(private newsDB: NewsDatabase, private activatedRoute: ActivatedRoute, private newsHttp: NewsHttpService, private router: Router) { }
 
   async ngOnInit() {
-    const isoCode = this.activatedRoute.snapshot.params['country']
+    this.isoCode = this.activatedRoute.snapshot.params['country'].toUpperCase()
 
     // get country iso code
-    await this.newsDB.getCountry(isoCode)
+    await this.newsDB.getCountry(this.isoCode)
       .then(res => {
         this.country = res[0]['countryName']
       })
@@ -35,68 +35,56 @@ export class NewsComponent implements OnInit {
       })
 
     // check database for news
-    await this.newsDB.getNewsArticle(isoCode)
-      .then(res => {
-        console.log(res);
-        
-        if (res.length < 0){
-          this.articles = res
-          console.log('>>>Retrieved from database',this.articles);
+    await this.newsDB.getNewsArticle(this.isoCode)
+      .then(async res => {
+        if (res.length != 0) {
+
+          if (res[0].retrieveTime < Date.now() - 300000 ) {
+            console.log('From http clear cache');
+            await this.clearDbCache()
+            await this.getNewsFromHttp();
+          } else {
+            console.log('From db');
+            this.articles = res;
+          }
+          
         } else {
-          // get news from api
-          this.newsHttp.getNews(isoCode, this.apiKey)
-            .then(res => {
-              this.retrievedArticle = res.articles;
-              this.articles = this.retrievedArticle.map(
-                r => {
-                  return {
-                    country: isoCode,
-                    retrieveTime: Date(),
-                    save: false,
-                    sourceName: r.source.name,
-                    author: r.author,
-                    title: r.title,
-                    description: r.description,
-                    url: r.url,
-                    urlToImage: r.urlToImage,
-                    publishedAt: r.publishedAt,
-                    content: r.content
-                  } as NewsArticle
-                }
-              );
-              console.log('>>>Retrieved from http',this.articles);
-              
-              this.newsDB.addNewsArticle(this.articles);        
-            })
+          console.log('From http no cache');
+          await this.getNewsFromHttp();
         }
-
       })
-
-
-    
   }
 
+  async getNewsFromHttp() {
+    await this.newsHttp.getNews(this.isoCode, this.apiKey)
+      .then(res => {
+        this.retrievedArticle = res.articles;
+        this.articles = this.retrievedArticle.map(
+          r => {
+            return {
+              country: this.isoCode,
+              retrieveTime: Date.now(),
+              save: false,
+              sourceName: r.source.name,
+              author: r.author,
+              title: r.title,
+              description: r.description,
+              url: r.url,
+              urlToImage: r.urlToImage,
+              publishedAt: r.publishedAt,
+              content: r.content
+            } as NewsArticle
+          }
+        );
+      })
+      await this.newsDB.addNewsArticle(this.articles);
+    }
 
-  // res.articles.map(r => {
-  //   return {
-  //     sourceName: r.articles.source.name,
-  //     author: r.articles.author,
-  //     title: r.articles.title,
-  //     description: r.articles.description,
-  //     url: r.articles.url,
-  //     urlToImage: r.articles.urlToImage,
-  //     publishedAt: r.articles.publishedAt,
-  //     content: r.articles.content,
-  //   }
-  // })
+  async clearDbCache() {
+    await this.newsDB.clearOldNewsArticle(this.isoCode);
+  }
 
-
-  // this.countryList = res.map(r => {
-  //   return {
-  //     isoCode: r.alpha2Code,
-  //     countryName: r.name,
-  //     flagUrl: r.flag,
-  //   } as Country
-  // })
-
+  async saveArticle(url, $event) {
+    await this.newsDB.saveNewsArticle(url, this.isoCode,$event.target.checked)
+  }
 }
