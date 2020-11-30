@@ -31,7 +31,7 @@ export class NewsDatabase extends Dexie {
 
     // add ApiKey
     addApiKey(k: ApiKey): Promise<any> {
-        return this.apiKeySettings.add(k)
+        return this.apiKeySettings.put(k)
     }
 
     // delete ApiKey
@@ -44,32 +44,38 @@ export class NewsDatabase extends Dexie {
     // COUNTRY LIST COLLECTION
     // get CountryList
     getCountryList(): Promise<Country[]> {
-        return this.countryList.toArray()
+        return this.countryList
+            .toArray()
     }
 
     // get Country
-    getCountry(c: string): Promise<Country[]> {
+    getCountry(c: string): Promise<Country> {
         return this.countryList
-            .where('isoCode').equals(c)
+            .where('isoCode').equalsIgnoreCase(c)
             .toArray()
+            .then(result => {
+                if (result.length > 0)
+                    return result[0]
+                return null
+            })
     }
 
     // add CountryList
     addCountryList(c: Country[]): Promise<any> {
-        return this.countryList.bulkAdd(c)
+        return this.countryList.bulkPut(c)
     }
 
     // NEWS ARTICLE COLLECTION
     // get news article
     getNewsArticle(c: string): Promise<NewsArticle[]> {
         return this.newsArticles
-            .where('country').equals(c)
+            .where('country').equalsIgnoreCase(c)
             .toArray()
     }
 
     // add news articles
     addNewsArticle(n: NewsArticle[]): Promise<any> {
-        return this.newsArticles.bulkAdd(n)
+        return this.newsArticles.bulkPut(n)
     }
 
     // delete articles greater than 5 minutes and not makred as save

@@ -14,7 +14,7 @@ export class NewsComponent implements OnInit {
   country
   isoCode
   apiKey
-  retrievedArticle
+  dbArticle
   articles: NewsArticle[]
   
   constructor(private newsDB: NewsDatabase, private activatedRoute: ActivatedRoute, private newsHttp: NewsHttpService, private router: Router) { }
@@ -25,7 +25,7 @@ export class NewsComponent implements OnInit {
     // get country iso code
     await this.newsDB.getCountry(this.isoCode)
       .then(res => {
-        this.country = res[0]['countryName']
+        this.country = res['countryName']
       })
 
     // get saved api key from database
@@ -39,13 +39,13 @@ export class NewsComponent implements OnInit {
       .then(async res => {
         if (res.length != 0) {
 
-          if (res[0].retrieveTime < Date.now() - 300000 ) {
+          if (res[0].retrieveTime < ( Date.now() - 300000 )) {
             console.log('From http clear cache');
-            await this.clearDbCache()
+            await this.clearDbCache() 
             await this.getNewsFromHttp();
           } else {
             console.log('From db');
-            this.articles = res;
+            this.articles = res.filter(e => e.retrieveTime > ( Date.now() - 300000 ));
           }
           
         } else {
@@ -56,10 +56,13 @@ export class NewsComponent implements OnInit {
   }
 
   async getNewsFromHttp() {
+    let retrievedList
+    let savedList = await this.newsDB.getNewsArticle(this.isoCode)
+      .then(result => result.map(e => e.url))
+    
     await this.newsHttp.getNews(this.isoCode, this.apiKey)
       .then(res => {
-        this.retrievedArticle = res.articles;
-        this.articles = this.retrievedArticle.map(
+        retrievedList = res.articles.map(
           r => {
             return {
               country: this.isoCode,
@@ -75,9 +78,12 @@ export class NewsComponent implements OnInit {
               content: r.content
             } as NewsArticle
           }
-        );
+        ).filter(e => !savedList.includes(e.url))
       })
-      await this.newsDB.addNewsArticle(this.articles);
+      await this.newsDB.addNewsArticle(retrievedList);
+
+      this.articles = await this.newsDB.getNewsArticle(this.isoCode)
+      .then(result => {return result.filter(e => e.retrieveTime > ( Date.now() - 300000 ))})
     }
 
   async clearDbCache() {
@@ -87,4 +93,5 @@ export class NewsComponent implements OnInit {
   async saveArticle(url, $event) {
     await this.newsDB.saveNewsArticle(url, this.isoCode,$event.target.checked)
   }
+
 }

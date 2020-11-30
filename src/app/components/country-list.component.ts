@@ -18,22 +18,41 @@ export class CountryListComponent implements OnInit {
 
     const list = await this.newsDB.getCountryList()
 
-    if (list.length>0) {
+    if (list.length > 0) {
 
       console.log('>> CountryListComponent: country list found');
-      this.countryList = list
+      this.countryList = list.sort(function(a, b) {
+        if (a.countryName > b.countryName) {
+          return 1;
+        }
+        if (a.countryName < b.countryName) {
+          return -1;
+        }
+        return 0;
+      })
 
     } else {
 
       console.log('>> CountryListComponent: no country list found');
       const res  = await this.newshttp.getCountryList()
-      this.countryList = res.map(r => {
-        return {
-          isoCode: r.alpha2Code,
-          countryName: r.name,
-          flagUrl: r.flag,
-        } as Country
-      })
+      this.countryList = res
+        .map(r => {
+          return {
+            isoCode: r.alpha2Code,
+            countryName: r.name,
+            flagUrl: r.flag,
+          } as Country
+        })
+        .sort(function(a, b) {
+          if (a.countryName > b.countryName) {
+            return 1;
+          }
+          if (a.countryName < b.countryName) {
+            return -1;
+          }
+          return 0;
+        })
+
       console.log('>> CountryListComponent: country list retrieved from http');
       await this.newsDB.addCountryList(this.countryList)
       console.log('>> CountryListComponent: country list added to db');

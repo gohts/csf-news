@@ -7,7 +7,7 @@
         <div class="card mb-3" *ngFor="let article of articles; let i = index">
             <div class="row no-gutters p-3">
                 <div class="col-md-6">
-                    <img src={{article.urlToImage}} style="max-width: 500px;">
+                    <img src={{article.urlToImage}} class="img-fluid pr-3">
                 </div>
                 <div class=col-md-6>
                     <h5 class="card-title">{{article.title}} - {{article.sourceName}}</h5>
@@ -34,13 +34,3 @@
         </div>
     </div>
 </div>
-
-
-<!-- sourceName: r.source.name,
-author: r.author,
-title: r.title,
-description: r.description,
-url: r.url,
-urlToImage: r.urlToImage,
-publishedAt: r.publishedAt,
-content: r.content -->
